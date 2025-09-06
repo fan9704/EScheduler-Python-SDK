@@ -18,14 +18,13 @@ Classifier: Programming Language :: Python :: 3.12
 Requires-Python: >=3.9
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Requires-Dist: build>=1.3.0
 Requires-Dist: httpx>=0.24.0
 Requires-Dist: pydantic>=2.0.0
 Requires-Dist: pytest>=8.4.2
 Requires-Dist: python-dateutil>=2.8.0
-Requires-Dist: twine>=6.2.0
 Requires-Dist: typing-extensions>=4.0.0
 Provides-Extra: dev
+Requires-Dist: build>=1.3.0; extra == "dev"
 Requires-Dist: pytest>=7.0.0; extra == "dev"
 Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
 Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
@@ -33,6 +32,8 @@ Requires-Dist: black>=23.0.0; extra == "dev"
 Requires-Dist: isort>=5.12.0; extra == "dev"
 Requires-Dist: flake8>=6.0.0; extra == "dev"
 Requires-Dist: mypy>=1.0.0; extra == "dev"
+Requires-Dist: pre-commit>=4.3.0; extra == "dev"
+Requires-Dist: twine>=6.2.0; extra == "dev"
 Dynamic: license-file
 
 # EScheduler Python SDK
@@ -62,8 +63,10 @@ pip install -e .
 ### 開發環境安裝
 
 ```bash
-pip install build twine
+uv sync # 安裝依賴
 pip install -e ".[dev]"
+uv run python -m build # 建立發行包
+twine upload --repository escheduler_sdk dist/*
 ```
 
 ## 快速開始
