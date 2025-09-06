@@ -1,12 +1,12 @@
 Metadata-Version: 2.4
 Name: escheduler-sdk
-Version: 0.1.0
+Version: 0.0.1
 Summary: Python SDK for EScheduler API
-Author-email: EScheduler Team <team@escheduler.com>
-Project-URL: Homepage, https://github.com/escheduler/escheduler-python-sdk
-Project-URL: Repository, https://github.com/escheduler/escheduler-python-sdk
-Project-URL: Documentation, https://escheduler-python-sdk.readthedocs.io
-Project-URL: Bug Tracker, https://github.com/escheduler/escheduler-python-sdk/issues
+Author-email: EScheduler Team <gangtingfan0207@gmail.com>
+Project-URL: Homepage, https://github.com/fan9704/EScheduler-Python-SDK
+Project-URL: Repository, https://github.com/fan9704/EScheduler-Python-SDK
+Project-URL: Documentation, https://github.com/fan9704/EScheduler-Python-SDK
+Project-URL: Bug Tracker, https://github.com/fan9704/EScheduler-Python-SDK/issues
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: MIT License
@@ -17,12 +17,14 @@ Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
 Requires-Python: >=3.9
 Description-Content-Type: text/markdown
+License-File: LICENSE
 Requires-Dist: httpx>=0.24.0
 Requires-Dist: pydantic>=2.0.0
 Requires-Dist: pytest>=8.4.2
 Requires-Dist: python-dateutil>=2.8.0
 Requires-Dist: typing-extensions>=4.0.0
 Provides-Extra: dev
+Requires-Dist: build>=1.3.0; extra == "dev"
 Requires-Dist: pytest>=7.0.0; extra == "dev"
 Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
 Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
@@ -30,6 +32,9 @@ Requires-Dist: black>=23.0.0; extra == "dev"
 Requires-Dist: isort>=5.12.0; extra == "dev"
 Requires-Dist: flake8>=6.0.0; extra == "dev"
 Requires-Dist: mypy>=1.0.0; extra == "dev"
+Requires-Dist: pre-commit>=4.3.0; extra == "dev"
+Requires-Dist: twine>=6.2.0; extra == "dev"
+Dynamic: license-file
 
 # EScheduler Python SDK
 
@@ -58,7 +63,10 @@ pip install -e .
 ### 開發環境安裝
 
 ```bash
+uv sync # 安裝依賴
 pip install -e ".[dev]"
+uv run python -m build # 建立發行包
+twine upload --repository escheduler_sdk dist/*
 ```
 
 ## 快速開始

@@ -1,3 +1,4 @@
+LICENSE
 README.md
 pyproject.toml
 src/escheduler_sdk/__init__.py

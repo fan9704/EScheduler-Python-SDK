@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "escheduler-sdk"
-version = "0.1.0"
+version = "0.0.1"
 description = "Python SDK for EScheduler API"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
-    {name = "EScheduler Team", email = "team@escheduler.com"}
+    {name = "EScheduler Team", email = "gangtingfan0207@gmail.com"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -31,27 +31,30 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "build>=1.3.0",
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.0.0",
     "black>=23.0.0",
     "isort>=5.12.0",
     "flake8>=6.0.0",
-    "mypy>=1.0.0"
+    "mypy>=1.0.0",
+    "pre-commit>=4.3.0",
+    "twine>=6.2.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/escheduler/escheduler-python-sdk"
-Repository = "https://github.com/escheduler/escheduler-python-sdk"
-Documentation = "https://escheduler-python-sdk.readthedocs.io"
-"Bug Tracker" = "https://github.com/escheduler/escheduler-python-sdk/issues"
+Homepage = "https://github.com/fan9704/EScheduler-Python-SDK"
+Repository = "https://github.com/fan9704/EScheduler-Python-SDK"
+Documentation = "https://github.com/fan9704/EScheduler-Python-SDK"
+"Bug Tracker" = "https://github.com/fan9704/EScheduler-Python-SDK/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.black]
 line-length = 88
-target-version = ['py38']
+target-version = ['py39']
 include = '\.pyi?$'
 
 [tool.isort]
@@ -59,7 +62,7 @@ profile = "black"
 line_length = 88
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -72,3 +75,11 @@ asyncio_mode = "auto"
 markers = [
     "asyncio: marks tests as async"
 ]
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.0.1"
+version_files = [
+    "pyproject.toml:version",
+]
+tag_format = "v$version"
+update_changelog_on_bump = true   # 自動更新 CHANGELOG.md

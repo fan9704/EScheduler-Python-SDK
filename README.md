@@ -25,7 +25,10 @@ pip install -e .
 ### 開發環境安裝
 
 ```bash
+uv sync # 安裝依賴
 pip install -e ".[dev]"
+uv run python -m build # 建立發行包
+twine upload --repository escheduler_sdk dist/*
 ```
 
 ## 快速開始
