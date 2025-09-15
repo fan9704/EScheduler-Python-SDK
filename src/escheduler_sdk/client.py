@@ -86,12 +86,14 @@ class ESchedulerClient:
     def _handle_response_error(self, response: httpx.Response) -> None:
         """處理 HTTP 回應錯誤"""
         status_code = response.status_code
+        error_data = {}  # 初始化 error_data
         
         try:
             error_data = response.json()
             message = error_data.get("detail", error_data.get("message", "未知錯誤"))
         except Exception:
             message = response.text or f"HTTP {status_code} 錯誤"
+            # error_data 保持為空字典
         
         if status_code == 400:
             raise ValidationError(message, status_code=status_code, response_data=error_data)
