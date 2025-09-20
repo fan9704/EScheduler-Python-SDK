@@ -7,7 +7,6 @@ from .scheduler import (
     SchedulerStatsResponse,
     TaskStateUpdateRequest,
 )
-from .team import Team, TeamAuthRequest, TeamAuthResponse
 
 __all__ = [
     "MessageResponse",
@@ -18,7 +17,4 @@ __all__ = [
     "TaskExecutionResponse",
     "SchedulerStatsResponse",
     "TaskStateUpdateRequest",
-    "Team",
-    "TeamAuthRequest",
-    "TeamAuthResponse",
 ]

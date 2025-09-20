@@ -19,6 +19,7 @@ class ScheduledTaskCreate(BaseModel):
     max_retry_attempts: int = Field(3, ge=0, le=10, description="最大重試次數")
     retry_policy: Optional[Dict[str, Any]] = Field(None, description="重試策略")
     dead_letter_config: Optional[Dict[str, Any]] = Field(None, description="死信佇列配置")
+    state: TaskState = Field(default=TaskState.ENABLED, description="任務狀態")
     
     @field_validator('schedule_expression')
     @classmethod
@@ -57,7 +58,7 @@ class ScheduledTaskResponse(BaseModel):
     target_type: str
     target_arn: str
     target_input: Optional[Dict[str, Any]]
-    state: str
+    state: TaskState
     last_execution_time: Optional[datetime]
     next_execution_time: Optional[datetime]
     execution_count: int
