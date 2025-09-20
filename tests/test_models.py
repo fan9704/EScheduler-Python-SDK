@@ -11,9 +11,6 @@ from escheduler_sdk.models import (
     TaskExecutionResponse,
     SchedulerStatsResponse,
     TaskStateUpdateRequest,
-    Team,
-    TeamAuthRequest,
-    TeamAuthResponse,
     TaskState,
     TargetType,
     ExecutionStatus,
@@ -204,66 +201,6 @@ class TestScheduledTaskUpdate:
         assert update_data.schedule_expression is None
         assert update_data.state is None
 
-
-class TestTeamModels:
-    """測試團隊相關模型"""
-    
-    def test_team_model(self):
-        """測試團隊模型"""
-        team = Team(id=1, name="第1小隊")
-        
-        assert team.id == 1
-        assert team.name == "第1小隊"
-    
-    def test_team_auth_request(self):
-        """測試團隊認證請求"""
-        auth_request = TeamAuthRequest(token="ABCD")
-        
-        assert auth_request.token == "ABCD"
-    
-    def test_team_auth_request_validation(self):
-        """測試團隊認證請求驗證"""
-        # 測試過短的 token
-        with pytest.raises(ValidationError):
-            TeamAuthRequest(token="ABC")
-        
-        # 測試過長的 token
-        with pytest.raises(ValidationError):
-            TeamAuthRequest(token="ABCDE")
-        
-        # 測試有效的 token
-        valid_tokens = ["ABCD", "1234", "A1B2"]
-        for token in valid_tokens:
-            auth_request = TeamAuthRequest(token=token)
-            assert auth_request.token == token
-    
-    def test_team_auth_response(self):
-        """測試團隊認證回應"""
-        team = Team(id=1, name="第1小隊")
-        auth_response = TeamAuthResponse(
-            status=True,
-            team=team,
-            access_token="jwt-token-here"
-        )
-        
-        assert auth_response.status is True
-        assert auth_response.team.id == 1
-        assert auth_response.team.name == "第1小隊"
-        assert auth_response.access_token == "jwt-token-here"
-    
-    def test_team_auth_response_failure(self):
-        """測試團隊認證失敗回應"""
-        auth_response = TeamAuthResponse(
-            status=False,
-            team=None,
-            access_token=None
-        )
-        
-        assert auth_response.status is False
-        assert auth_response.team is None
-        assert auth_response.access_token is None
-
-
 class TestTaskStateUpdateRequest:
     """測試任務狀態更新請求"""
     
@@ -276,11 +213,9 @@ class TestTaskStateUpdateRequest:
 
 class TestResponseModels:
     """測試回應模型"""
-    
     def test_scheduled_task_response(self):
         """測試排程任務回應模型"""
         now = datetime.now()
-        
         task_response = ScheduledTaskResponse(
             id=1,
             name="測試任務",

@@ -1,17 +1,17 @@
 """EScheduler SDK 排程任務 API 封裝"""
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Union
 
 from .client import ESchedulerClient
 from .models import (
     ScheduledTaskCreate,
     ScheduledTaskUpdate,
     ScheduledTaskResponse,
-    TaskExecutionResponse,
     SchedulerStatsResponse,
     TaskStateUpdateRequest,
     TaskState,
-    MessageResponse
+    MessageResponse,
+    BaseTaskTemplate,
 )
 
 
@@ -28,12 +28,18 @@ class SchedulerAPI:
         self.client = client
         self.base_endpoint = "/api/scheduler"
     
-    async def create_task(self, task_data: ScheduledTaskCreate) -> ScheduledTaskResponse:
+    async def create_task(
+        self, 
+        task: Union[ScheduledTaskCreate, BaseTaskTemplate]
+    ) -> ScheduledTaskResponse:
         """
-        創建新的排程任務
+        創建新的排程任務。
+        
+        可以接受一個完整的 `ScheduledTaskCreate` 模型，
+        或者一個 `BaseTaskTemplate` 的子類實例來快速創建任務。
         
         Args:
-            task_data: 任務創建數據
+            task: 任務創建數據模型或任務範本
             
         Returns:
             創建的任務信息
@@ -43,6 +49,11 @@ class SchedulerAPI:
             AuthenticationError: 當認證失敗時
             ESchedulerError: 其他 API 錯誤
         """
+        if isinstance(task, BaseTaskTemplate):
+            task_data = task.build()
+        else:
+            task_data = task
+
         response_data = await self.client.post(
             self.base_endpoint,
             json_data=task_data.model_dump(exclude_none=True)

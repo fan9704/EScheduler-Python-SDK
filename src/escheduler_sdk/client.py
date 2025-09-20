@@ -1,11 +1,10 @@
 """EScheduler SDK 客戶端類"""
 
 import asyncio
-from typing import Optional, Dict, Any, Union
+from typing import Optional, Dict, Any
 from urllib.parse import urljoin
 
 import httpx
-from pydantic import BaseModel
 
 from .exceptions import (
     ESchedulerError,

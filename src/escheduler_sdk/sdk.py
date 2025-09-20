@@ -4,7 +4,6 @@ from typing import Optional
 
 from .client import ESchedulerClient
 from .scheduler import SchedulerAPI
-from .team import TeamAPI
 
 
 class ESchedulerSDK:
@@ -45,7 +44,6 @@ class ESchedulerSDK:
         
         # 初始化 API 模組
         self.scheduler = SchedulerAPI(self.client)
-        self.team = TeamAPI(self.client)
     
     async def __aenter__(self):
         """異步上下文管理器入口"""
@@ -59,40 +57,3 @@ class ESchedulerSDK:
         """關閉 SDK 連接"""
         await self.client.close()
     
-    async def authenticate(self, token: str) -> bool:
-        """
-        使用團隊 token 進行認證
-        
-        這是一個便利方法，會自動進行團隊認證並設置 JWT token。
-        
-        Args:
-            token: 團隊認證 token (4位字符)
-            
-        Returns:
-            認證是否成功
-            
-        Raises:
-            AuthenticationError: 當認證失敗時
-            ValidationError: 當 token 格式不正確時
-            ESchedulerError: 其他 API 錯誤
-        """
-        try:
-            auth_response = await self.team.auth_and_set_token(token)
-            return auth_response.status
-        except Exception:
-            return False
-    
-    def is_authenticated(self) -> bool:
-        """
-        檢查是否已認證
-        
-        Returns:
-            是否已設置 JWT token
-        """
-        return self.client.jwt_token is not None
-    
-    def logout(self) -> None:
-        """
-        登出，清除認證信息
-        """
-        self.team.logout()
