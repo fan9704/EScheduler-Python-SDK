@@ -94,7 +94,7 @@ class TestSchedulerAPI:
         assert isinstance(result, ScheduledTaskResponse)
         assert result.id == 1
         assert result.name == "測試任務"
-        assert result.state == "ENABLED"
+        assert result.state == TaskState.ENABLED
         
         # 驗證 API 調用
         mock_client.post.assert_called_once_with(
