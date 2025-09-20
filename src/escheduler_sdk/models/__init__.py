@@ -17,9 +17,6 @@ __all__ = [
     "TaskExecutionResponse",
     "SchedulerStatsResponse",
     "TaskStateUpdateRequest",
-    "Team",
-    "TeamAuthRequest",
-    "TeamAuthResponse",
     # Task templates from .template
     "BaseTaskTemplate",
     "HttpTaskTemplate",

@@ -1,6 +1,6 @@
 """EScheduler SDK 數據模型"""
 
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
 

@@ -1,13 +1,12 @@
 """EScheduler SDK 排程任務 API 封裝"""
 
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Union
 
 from .client import ESchedulerClient
 from .models import (
     ScheduledTaskCreate,
     ScheduledTaskUpdate,
     ScheduledTaskResponse,
-    TaskExecutionResponse,
     SchedulerStatsResponse,
     TaskStateUpdateRequest,
     TaskState,
@@ -27,7 +26,7 @@ class SchedulerAPI:
             client: EScheduler 客戶端實例
         """
         self.client = client
-        self.base_endpoint = "/api/scheduler/"
+        self.base_endpoint = "/api/scheduler"
     
     async def create_task(
         self, 

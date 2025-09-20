@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import AsyncGenerator
 
 from escheduler_sdk import ESchedulerSDK
-from escheduler_sdk.models import ScheduledTaskCreate, TargetType
+from escheduler_sdk.models import TargetType
 
 
 @pytest.fixture(scope="session")

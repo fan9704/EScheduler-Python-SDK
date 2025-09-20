@@ -2,7 +2,8 @@
 
 import pytest
 import httpx
-from unittest.mock import AsyncMock, Mock, patch
+import pytest_asyncio
+from unittest.mock import Mock, patch
 
 from escheduler_sdk.client import ESchedulerClient
 from escheduler_sdk.exceptions import (
@@ -17,10 +18,10 @@ from escheduler_sdk.exceptions import (
 
 class TestESchedulerClient:
     """EScheduler 客戶端測試類"""
-    
+
     BASE_URL = "http://127.0.0.1:8000"
-    
-    @pytest.fixture
+
+    @pytest_asyncio.fixture
     async def client(self):
         """測試客戶端 fixture"""
         client = ESchedulerClient(
@@ -30,7 +31,7 @@ class TestESchedulerClient:
         )
         yield client
         await client.close()
-    
+
     def test_client_initialization(self):
         """測試客戶端初始化"""
         client = ESchedulerClient(
@@ -40,7 +41,7 @@ class TestESchedulerClient:
             timeout=15.0,
             max_retries=5
         )
-        
+
         assert client.base_url == self.BASE_URL
         assert client.token == "ABCD"
         assert client.jwt_token == "test-jwt"
@@ -48,37 +49,40 @@ class TestESchedulerClient:
         assert client.max_retries == 5
         assert "Authorization" in client._client.headers
         assert client._client.headers["Authorization"] == "Bearer test-jwt"
-    
+
     def test_build_url(self):
         """測試 URL 構建"""
         client = ESchedulerClient(base_url=self.BASE_URL)
-        
+
         # 測試基本 URL 構建
-        assert client._build_url("/api/v1/scheduler/tasks") == f"{self.BASE_URL}/api/v1/scheduler/tasks"
-        assert client._build_url("api/v1/scheduler/tasks") == f"{self.BASE_URL}/api/v1/scheduler/tasks"
-        
+        assert client._build_url(
+            "/api/v1/scheduler/tasks") == f"{self.BASE_URL}/api/v1/scheduler/tasks"
+        assert client._build_url(
+            "api/v1/scheduler/tasks") == f"{self.BASE_URL}/api/v1/scheduler/tasks"
+
         # 測試帶斜線的基礎 URL
         client.base_url = f"{self.BASE_URL}/"
-        assert client._build_url("/api/v1/scheduler/tasks") == f"{self.BASE_URL}/api/v1/scheduler/tasks"
-    
+        assert client._build_url(
+            "/api/v1/scheduler/tasks") == f"{self.BASE_URL}/api/v1/scheduler/tasks"
+
     def test_jwt_token_management(self):
         """測試 JWT token 管理"""
         client = ESchedulerClient(base_url=self.BASE_URL)
-        
+
         # 初始狀態沒有 Authorization header
         assert "Authorization" not in client._client.headers
-        
+
         # 設置 JWT token (模擬真實的 JWT token 格式)
         real_jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
         client.set_jwt_token(real_jwt)
         assert client.jwt_token == real_jwt
         assert client._client.headers["Authorization"] == f"Bearer {real_jwt}"
-        
+
         # 清除 JWT token
         client.clear_jwt_token()
         assert client.jwt_token is None
         assert "Authorization" not in client._client.headers
-    
+
     @pytest.mark.asyncio
     async def test_successful_request(self, client):
         """測試成功的請求"""
@@ -104,7 +108,7 @@ class TestESchedulerClient:
             assert "tasks" in result
             assert len(result["tasks"]) == 1
             assert result["tasks"][0]["id"] == "task-123"
-    
+
     @pytest.mark.asyncio
     async def test_error_handling(self, client):
         """測試錯誤處理"""
@@ -123,7 +127,7 @@ class TestESchedulerClient:
                 await client.get("/api/v1/scheduler/tasks")
             assert exc_info.value.status_code == 401
             assert "Invalid authentication credentials" in str(exc_info.value)
-        
+
         # 測試 400 錯誤 - 無效的請求參數
         mock_response = Mock()
         mock_response.is_success = False
@@ -134,11 +138,11 @@ class TestESchedulerClient:
             "error_code": "VALIDATION_ERROR",
             "field": "schedule_expression"
         }
-        
+
         with patch.object(client._client, 'request', return_value=mock_response):
             with pytest.raises(ValidationError):
                 await client.post("/api/v1/scheduler/tasks", json_data={"name": "test", "schedule_expression": "invalid"})
-        
+
         # 測試 404 錯誤 - 任務不存在
         mock_response = Mock()
         mock_response.is_success = False
@@ -149,11 +153,11 @@ class TestESchedulerClient:
             "error_code": "TASK_NOT_FOUND",
             "task_id": "non-existent-task"
         }
-        
+
         with patch.object(client._client, 'request', return_value=mock_response):
             with pytest.raises(NotFoundError):
                 await client.get("/api/v1/scheduler/tasks/non-existent-task")
-        
+
         # 測試 500 錯誤 - 服務器內部錯誤
         mock_response = Mock()
         mock_response.is_success = False
@@ -163,19 +167,20 @@ class TestESchedulerClient:
             "detail": "Database connection failed",
             "error_code": "INTERNAL_SERVER_ERROR"
         }
-        
+
         with patch.object(client._client, 'request', return_value=mock_response):
             with pytest.raises(ServerError):
                 await client.get("/api/v1/scheduler/tasks")
-    
+
     @pytest.mark.asyncio
     async def test_timeout_handling(self, client):
         """測試超時處理"""
         with patch.object(client._client, 'request', side_effect=httpx.TimeoutException("Request timeout after 10 seconds")):
             with pytest.raises(TimeoutError) as exc_info:
                 await client.get("/api/v1/scheduler/tasks")
-            assert "請求超時" in str(exc_info.value) or "timeout" in str(exc_info.value).lower()
-    
+            assert "請求超時" in str(exc_info.value) or "timeout" in str(
+                exc_info.value).lower()
+
     @pytest.mark.asyncio
     async def test_network_error_handling(self, client):
         """測試網路錯誤處理"""
@@ -183,7 +188,7 @@ class TestESchedulerClient:
             with pytest.raises(NetworkError) as exc_info:
                 await client.get("/api/v1/scheduler/tasks")
             assert "Connection refused" in str(exc_info.value)
-    
+
     @pytest.mark.asyncio
     async def test_retry_mechanism(self, client):
         """測試重試機制"""
@@ -212,7 +217,7 @@ class TestESchedulerClient:
                 })
                 assert result["task_id"] == "task-456"
                 assert result["status"] == "ENABLED"
-    
+
     @pytest.mark.asyncio
     async def test_context_manager(self):
         """測試上下文管理器"""
@@ -222,20 +227,21 @@ class TestESchedulerClient:
             # 模擬在上下文中進行 API 調用
             mock_response = Mock()
             mock_response.is_success = True
-            mock_response.json.return_value = {"health": "ok", "version": "1.0.0"}
-            
+            mock_response.json.return_value = {
+                "health": "ok", "version": "1.0.0"}
+
             with patch.object(client._client, 'request', return_value=mock_response):
                 result = await client.get("/api/v1/health")
                 assert result["health"] == "ok"
         # 客戶端應該已經關閉
-    
+
     @pytest.mark.asyncio
     async def test_http_methods(self, client):
         """測試各種 HTTP 方法"""
         mock_response = Mock()
         mock_response.is_success = True
         mock_response.json.return_value = {"operation": "success"}
-        
+
         with patch.object(client._client, 'request', return_value=mock_response) as mock_request:
             # 測試 GET - 獲取任務列表
             await client.get("/api/v1/scheduler/tasks", params={"state": "ENABLED", "limit": 10})
@@ -245,7 +251,7 @@ class TestESchedulerClient:
                 json=None,
                 params={"state": "ENABLED", "limit": 10}
             )
-            
+
             # 測試 POST - 創建新任務
             task_data = {
                 "name": "每日備份任務",
@@ -264,7 +270,7 @@ class TestESchedulerClient:
                 json=task_data,
                 params=None
             )
-            
+
             # 測試 PUT - 完整更新任務
             updated_task_data = {
                 "name": "每日備份任務 (更新)",
@@ -282,7 +288,7 @@ class TestESchedulerClient:
                 json=updated_task_data,
                 params=None
             )
-            
+
             # 測試 PATCH - 部分更新任務狀態
             state_update = {"state": "PAUSED"}
             await client.patch("/api/v1/scheduler/tasks/task-123/state", json_data=state_update)
@@ -292,7 +298,7 @@ class TestESchedulerClient:
                 json=state_update,
                 params=None
             )
-            
+
             # 測試 DELETE - 刪除任務
             await client.delete("/api/v1/scheduler/tasks/task-123")
             mock_request.assert_called_with(
