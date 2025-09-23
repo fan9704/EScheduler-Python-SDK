@@ -7,6 +7,66 @@ from typing import AsyncGenerator
 
 from escheduler_sdk import ESchedulerSDK
 from escheduler_sdk.models import TargetType
+from testcontainers.core.container import DockerContainer
+from testcontainers.postgres import PostgresContainer
+
+@pytest.fixture(scope="session")
+def postgres():
+    print("啟動 Postgres 容器...")
+    with PostgresContainer("postgres:16") \
+        .with_exposed_ports(5432) as pg:
+        yield {
+            "POSTGRES_USER": pg.username,
+            "POSTGRES_PASSWORD": pg.password,
+            "POSTGRES_DB": pg.dbname,
+            "POSTGRES_PORT": pg.get_exposed_port(5432),
+            "POSTGRES_HOST": pg.get_container_host_ip(),
+        }
+
+@pytest.fixture(scope="session")
+def rabbitmq():
+    print("啟動 RabbitMQ 容器...")
+    with DockerContainer("rabbitmq:3.13-management") \
+        .with_exposed_ports(5672) as rmq:
+        yield {
+            "RABBITMQ_HOST": rmq.get_container_host_ip(),
+            "RABBITMQ_PORT": rmq.get_exposed_port(5672),
+            "RABBITMQ_USER": "guest",
+            "RABBITMQ_PASSWORD": "guest", 
+            "RABBITMQ_VHOST": "/",
+        }
+
+@pytest.fixture(scope="session")
+def loki():
+    print("啟動 Loki 容器...")
+    with DockerContainer("grafana/loki:2.9.2") \
+        .with_exposed_ports(3100) as l:
+        host = l.get_container_host_ip()
+        port = l.get_exposed_port(3100)
+        base_url = f"http://{host}:{port}"
+        yield f'{base_url}/loki/api/v1/push'
+
+@pytest.fixture(scope="session")
+def escheduler_container():
+    print("啟動 EScheduler 容器...")
+    with DockerContainer("escheduler:latest") \
+        .with_env("POSTGRES_USER", postgres["POSTGRES_USER"]) \
+        .with_env("POSTGRES_PASSWORD", postgres["POSTGRES_PASSWORD"]) \
+        .with_env("POSTGRES_DB", postgres["POSTGRES_DB"]) \
+        .with_env("POSTGRES_PORT", postgres["POSTGRES_PORT"]) \
+        .with_env("POSTGRES_HOST", postgres["POSTGRES_HOST"]) \
+        .with_env("RABBITMQ_HOST", rabbitmq["RABBITMQ_HOST"]) \
+        .with_env("RABBITMQ_PORT", rabbitmq["RABBITMQ_PORT"]) \
+        .with_env("RABBITMQ_USER", rabbitmq["RABBITMQ_USER"]) \
+        .with_env("RABBITMQ_PASSWORD", rabbitmq["RABBITMQ_PASSWORD"]) \
+        .with_env("RABBITMQ_VHOST", rabbitmq["RABBITMQ_VHOST"]) \
+        .with_env("LOKI_ENDPOINT", loki) \
+        .with_exposed_ports(8000) as container:
+        host = container.get_container_host_ip()
+        port = container.get_exposed_port(8000)
+        base_url = f"http://{host}:{port}"
+        yield base_url  # 提供給測試使用
+
 
 
 @pytest.fixture(scope="session")
