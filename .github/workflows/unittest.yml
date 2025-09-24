@@ -29,7 +29,6 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync
-          uv add --dev pytest
 
       - name: Install project in editable mode
         run: |
