@@ -2,6 +2,7 @@
 import pytest
 import os
 from datetime import datetime
+from dotenv import load_dotenv
 
 from escheduler_sdk import ESchedulerSDK
 from escheduler_sdk.models import (
@@ -12,6 +13,7 @@ from escheduler_sdk.models import (
 from escheduler_sdk.exceptions import NotFoundError, ESchedulerError
 
 # --- 測試設定 ---
+load_dotenv()
 BASE_URL = os.getenv("ESCHEDULER_BASE_URL", "http://localhost:8000")
 JWT_TOKEN = os.getenv("ESCHEDULER_JWT_TOKEN", "test-jwt-token")
 TARGET_EMAIL = os.getenv("TARGET_EMAIL", None)
