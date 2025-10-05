@@ -5,6 +5,7 @@ from .strategy_templates import (
     WebhookTaskTemplate,
     RabbitMQTaskTemplate,
     EmailTaskTemplate,
+    EmailTemplateCreateTemplate
 )
 
 __all__ = [
@@ -13,4 +14,5 @@ __all__ = [
     "WebhookTaskTemplate",
     "RabbitMQTaskTemplate",
     "EmailTaskTemplate",
+    "EmailTemplateCreateTemplate"
 ]
