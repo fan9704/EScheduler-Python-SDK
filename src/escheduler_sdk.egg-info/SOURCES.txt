@@ -7,7 +7,6 @@ src/escheduler_sdk/exceptions.py
 src/escheduler_sdk/models.py
 src/escheduler_sdk/scheduler.py
 src/escheduler_sdk/sdk.py
-src/escheduler_sdk/team.py
 src/escheduler_sdk.egg-info/PKG-INFO
 src/escheduler_sdk.egg-info/SOURCES.txt
 src/escheduler_sdk.egg-info/dependency_links.txt
@@ -17,8 +16,10 @@ src/escheduler_sdk/models/__init__.py
 src/escheduler_sdk/models/enum/__init__.py
 src/escheduler_sdk/models/enum/enums.py
 src/escheduler_sdk/models/pydantic/__init__.py
+src/escheduler_sdk/models/pydantic/email.py
 src/escheduler_sdk/models/pydantic/generic.py
-src/escheduler_sdk/models/pydantic/task.py
-src/escheduler_sdk/models/pydantic/team.py
+src/escheduler_sdk/models/pydantic/scheduler.py
+src/escheduler_sdk/models/template/__init__.py
+src/escheduler_sdk/models/template/strategy_templates.py
 tests/test_client.py
 tests/test_models.py

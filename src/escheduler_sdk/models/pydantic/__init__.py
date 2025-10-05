@@ -7,6 +7,17 @@ from .scheduler import (
     SchedulerStatsResponse,
     TaskStateUpdateRequest,
 )
+from .email import (
+    TemplateVariable,
+    EmailTemplateCreate,
+    EmailTemplateUpdate,
+    EmailTemplateResponse,
+    EmailTaskCreate,
+    EmailTaskUpdate,
+    EmailTaskResponse,
+    EmailSendRequest,
+    EmailSendResponse,
+)
 
 __all__ = [
     "MessageResponse",
@@ -17,4 +28,13 @@ __all__ = [
     "TaskExecutionResponse",
     "SchedulerStatsResponse",
     "TaskStateUpdateRequest",
+    "TemplateVariable",
+    "EmailTemplateCreate",
+    "EmailTemplateUpdate",
+    "EmailTemplateResponse",
+    "EmailTaskCreate",
+    "EmailTaskUpdate",
+    "EmailTaskResponse",
+    "EmailSendRequest",
+    "EmailSendResponse",
 ]
