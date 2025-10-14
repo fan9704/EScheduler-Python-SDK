@@ -1,5 +1,4 @@
 import pytest
-import os
 from datetime import datetime
 from typing import Union
 
@@ -12,30 +11,9 @@ from escheduler_sdk.models import (
 )
 from escheduler_sdk.exceptions import ESchedulerError
 
-# --- 測試設定 ---
-# 從環境變數讀取後端 API 的設定
-BASE_URL = os.getenv("ESCHEDULER_BASE_URL", "http://localhost:8000")
-JWT_TOKEN = os.getenv("ESCHEDULER_JWT_TOKEN", "test-jwt-token")
-
-# 如果沒有設定環境變數，則跳過所有測試
-pytestmark = pytest.mark.skipif(
-    not all([BASE_URL, JWT_TOKEN]),
-    reason="需要設定 ESCHEDULER_API_URL 和 ESCHEDULER_TEAM_TOKEN 環境變數來執行 E2E 測試",
-)
-
-
 @pytest.mark.e2e
 class TestStrategyTemplateE2E:
     """使用範本進行任務生命週期的端對端測試"""
-
-    @pytest.fixture(scope="class")
-    def e2e_config(self):
-        """E2E 測試配置"""
-        return {
-            "base_url": BASE_URL,
-            "jwt_token": JWT_TOKEN,
-            "timeout": 30.0,
-        }
 
     async def _test_template_lifecycle(
         self,
@@ -50,11 +28,6 @@ class TestStrategyTemplateE2E:
     ):
         """
         測試範本創建和刪除的通用流程
-
-        Args:
-            sdk: ESchedulerSDK 實例
-            template: 要測試的任務範本
-            expected_arn: 預期的 target_arn
         """
         created_task = None
         try:
@@ -76,14 +49,13 @@ class TestStrategyTemplateE2E:
             if created_task and created_task.id:
                 print(f"正在刪除任務，ID: {created_task.id}")
                 try:
-                    delete_response = await sdk.scheduler.delete_task(created_task.id)
-                    assert delete_response.status_code != 200
+                    await sdk.scheduler.delete_task(created_task.id)
                     print(f"任務 {created_task.id} 清理成功。")
                 except ESchedulerError as e:
                     pytest.fail(f"清理（刪除）任務 {created_task.id} 失敗：{e}")
 
     @pytest.mark.asyncio
-    async def test_http_template_create_and_delete(self, e2e_config):
+    async def test_http_template_create_and_delete(self, test_sdk: ESchedulerSDK):
         """測試使用 HttpTaskTemplate 創建和刪除任務"""
         task_name = f"e2e-http-template-{int(datetime.now().timestamp())}"
         template = HttpTaskTemplate(
@@ -92,13 +64,12 @@ class TestStrategyTemplateE2E:
             schedule_expression="rate(1 day)",
             description="由 E2E 測試創建",
         )
-        async with ESchedulerSDK(**e2e_config) as sdk:
-            await self._test_template_lifecycle(
-                sdk, template, expected_arn="http://e2e-test.dev/http"
-            )
+        await self._test_template_lifecycle(
+            test_sdk, template, expected_arn="http://e2e-test.dev/http"
+        )
 
     @pytest.mark.asyncio
-    async def test_webhook_template_create_and_delete(self, e2e_config):
+    async def test_webhook_template_create_and_delete(self, test_sdk: ESchedulerSDK):
         """測試使用 WebhookTaskTemplate 創建和刪除任務"""
         task_name = f"e2e-webhook-template-{int(datetime.now().timestamp())}"
         template = WebhookTaskTemplate(
@@ -107,13 +78,12 @@ class TestStrategyTemplateE2E:
             schedule_expression="rate(1 hour)",
             payload={"message": "來自 E2E 測試"},
         )
-        async with ESchedulerSDK(**e2e_config) as sdk:
-            await self._test_template_lifecycle(
-                sdk, template, expected_arn="http://e2e-test.dev/webhook"
-            )
+        await self._test_template_lifecycle(
+            test_sdk, template, expected_arn="http://e2e-test.dev/webhook"
+        )
 
     @pytest.mark.asyncio
-    async def test_rabbitmq_template_create_and_delete(self, e2e_config):
+    async def test_rabbitmq_template_create_and_delete(self, test_sdk: ESchedulerSDK):
         """測試使用 RabbitMQTaskTemplate 創建和刪除任務"""
         task_name = f"e2e-rabbitmq-template-{int(datetime.now().timestamp())}"
         template = RabbitMQTaskTemplate(
@@ -123,13 +93,12 @@ class TestStrategyTemplateE2E:
             schedule_expression="rate(5 minutes)",
             exchange="e2e_exchange",
         )
-        async with ESchedulerSDK(**e2e_config) as sdk:
-            await self._test_template_lifecycle(
-                sdk, template, expected_arn="e2e.test.key"
-            )
+        await self._test_template_lifecycle(
+            test_sdk, template, expected_arn="e2e.test.key"
+        )
 
     @pytest.mark.asyncio
-    async def test_email_template_create_and_delete(self, e2e_config):
+    async def test_email_template_create_and_delete(self, test_sdk: ESchedulerSDK):
         """測試使用 EmailTaskTemplate 創建和刪除任務"""
         task_name = f"e2e-email-template-{int(datetime.now().timestamp())}"
         template = EmailTaskTemplate(
@@ -139,7 +108,6 @@ class TestStrategyTemplateE2E:
             body="這是一封由 E2E 測試自動發送的郵件。",
             schedule_expression="rate(1 hour)",
         )
-        async with ESchedulerSDK(**e2e_config) as sdk:
-            await self._test_template_lifecycle(
-                sdk, template, expected_arn="E2E 測試郵件"
-            )
+        await self._test_template_lifecycle(
+            test_sdk, template, expected_arn="E2E 測試郵件"
+        )

@@ -52,7 +52,7 @@ def escheduler_base_url(
     loki_endpoint = f"http://{loki_host}:{loki_port}/loki/api/v1/push"
 
     # 啟動主應用程式容器
-    with DockerContainer("escheduler:latest") \
+    with DockerContainer("ghcr.io/fan9704/escheduler") \
         .with_env("POSTGRES_USER", pg_user) \
         .with_env("POSTGRES_PASSWORD", pg_password) \
         .with_env("POSTGRES_DB", pg_dbname) \
@@ -65,13 +65,22 @@ def escheduler_base_url(
         .with_env("RABBITMQ_VHOST", "/") \
         .with_env("LOKI_ENDPOINT", loki_endpoint) \
         .with_exposed_ports(8000) as escheduler:
-        # 等待容器日誌出現特定訊息，確保服務已準備就緒
-        wait_for_logs(escheduler, "Uvicorn running on")
-        host = escheduler.get_container_host_ip()
-        port = escheduler.get_exposed_port(8000)
-        base_url = f"http://{host}:{port}"
-        print(f"EScheduler 服務已啟動於: {base_url}")
-        yield base_url
+        try:
+            # 等待容器日誌出現特定訊息，確保服務已準備就緒
+            wait_for_logs(escheduler, "Uvicorn running on")
+            host = escheduler.get_container_host_ip()
+            port = escheduler.get_exposed_port(8000)
+            base_url = f"http://{host}:{port}"
+            print(f"EScheduler 服務已啟動於: {base_url}")
+            yield base_url
+
+        except Exception as e:
+            print("="*80)
+            print("EScheduler 容器啟動失敗：")
+            print("="*80)
+            print(escheduler.get_logs()[0].decode('utf-8'))
+            print("="*80)
+            raise e
 
 
 
