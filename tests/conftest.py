@@ -9,63 +9,69 @@ from escheduler_sdk import ESchedulerSDK
 from escheduler_sdk.models import TargetType
 from testcontainers.core.container import DockerContainer
 from testcontainers.postgres import PostgresContainer
+from testcontainers.core.waiting_utils import wait_for_logs
 
 @pytest.fixture(scope="session")
 def postgres():
     print("啟動 Postgres 容器...")
-    with PostgresContainer("postgres:16") \
-        .with_exposed_ports(5432) as pg:
-        yield {
-            "POSTGRES_USER": pg.username,
-            "POSTGRES_PASSWORD": pg.password,
-            "POSTGRES_DB": pg.dbname,
-            "POSTGRES_PORT": pg.get_exposed_port(5432),
-            "POSTGRES_HOST": pg.get_container_host_ip(),
-        }
+    with PostgresContainer("postgres:16") as pg:
+        yield pg
 
 @pytest.fixture(scope="session")
 def rabbitmq():
     print("啟動 RabbitMQ 容器...")
-    with DockerContainer("rabbitmq:3.13-management") \
-        .with_exposed_ports(5672) as rmq:
-        yield {
-            "RABBITMQ_HOST": rmq.get_container_host_ip(),
-            "RABBITMQ_PORT": rmq.get_exposed_port(5672),
-            "RABBITMQ_USER": "guest",
-            "RABBITMQ_PASSWORD": "guest", 
-            "RABBITMQ_VHOST": "/",
-        }
+    with DockerContainer("rabbitmq:3.13-management").with_exposed_ports(5672) as rmq:
+        yield rmq
 
 @pytest.fixture(scope="session")
 def loki():
     print("啟動 Loki 容器...")
-    with DockerContainer("grafana/loki:2.9.2") \
-        .with_exposed_ports(3100) as l:
-        host = l.get_container_host_ip()
-        port = l.get_exposed_port(3100)
-        base_url = f"http://{host}:{port}"
-        yield f'{base_url}/loki/api/v1/push'
+    with DockerContainer("grafana/loki:2.9.2").with_exposed_ports(3100) as l:
+        yield l
 
 @pytest.fixture(scope="session")
-def escheduler_container():
+def escheduler_base_url(
+    postgres: PostgresContainer,
+    rabbitmq: DockerContainer,
+    loki: DockerContainer
+) -> str:
     print("啟動 EScheduler 容器...")
+    
+    # 從依賴的容器 fixture 取得連線資訊
+    pg_host = postgres.get_container_host_ip()
+    pg_port = postgres.get_exposed_port(5432)
+    pg_user = postgres.username
+    pg_password = postgres.password
+    pg_dbname = postgres.dbname
+    
+    rmq_host = rabbitmq.get_container_host_ip()
+    rmq_port = rabbitmq.get_exposed_port(5672)
+    
+    loki_host = loki.get_container_host_ip()
+    loki_port = loki.get_exposed_port(3100)
+    loki_endpoint = f"http://{loki_host}:{loki_port}/loki/api/v1/push"
+
+    # 啟動主應用程式容器
     with DockerContainer("escheduler:latest") \
-        .with_env("POSTGRES_USER", postgres["POSTGRES_USER"]) \
-        .with_env("POSTGRES_PASSWORD", postgres["POSTGRES_PASSWORD"]) \
-        .with_env("POSTGRES_DB", postgres["POSTGRES_DB"]) \
-        .with_env("POSTGRES_PORT", postgres["POSTGRES_PORT"]) \
-        .with_env("POSTGRES_HOST", postgres["POSTGRES_HOST"]) \
-        .with_env("RABBITMQ_HOST", rabbitmq["RABBITMQ_HOST"]) \
-        .with_env("RABBITMQ_PORT", rabbitmq["RABBITMQ_PORT"]) \
-        .with_env("RABBITMQ_USER", rabbitmq["RABBITMQ_USER"]) \
-        .with_env("RABBITMQ_PASSWORD", rabbitmq["RABBITMQ_PASSWORD"]) \
-        .with_env("RABBITMQ_VHOST", rabbitmq["RABBITMQ_VHOST"]) \
-        .with_env("LOKI_ENDPOINT", loki) \
-        .with_exposed_ports(8000) as container:
-        host = container.get_container_host_ip()
-        port = container.get_exposed_port(8000)
+        .with_env("POSTGRES_USER", pg_user) \
+        .with_env("POSTGRES_PASSWORD", pg_password) \
+        .with_env("POSTGRES_DB", pg_dbname) \
+        .with_env("POSTGRES_PORT", pg_port) \
+        .with_env("POSTGRES_HOST", pg_host) \
+        .with_env("RABBITMQ_HOST", rmq_host) \
+        .with_env("RABBITMQ_PORT", rmq_port) \
+        .with_env("RABBITMQ_USER", "guest") \
+        .with_env("RABBITMQ_PASSWORD", "guest") \
+        .with_env("RABBITMQ_VHOST", "/") \
+        .with_env("LOKI_ENDPOINT", loki_endpoint) \
+        .with_exposed_ports(8000) as escheduler:
+        # 等待容器日誌出現特定訊息，確保服務已準備就緒
+        wait_for_logs(escheduler, "Uvicorn running on")
+        host = escheduler.get_container_host_ip()
+        port = escheduler.get_exposed_port(8000)
         base_url = f"http://{host}:{port}"
-        yield base_url  # 提供給測試使用
+        print(f"EScheduler 服務已啟動於: {base_url}")
+        yield base_url
 
 
 
@@ -118,10 +124,10 @@ def sample_task_response_data():
 
 
 @pytest.fixture
-async def test_sdk() -> AsyncGenerator[ESchedulerSDK, None]:
+async def test_sdk(escheduler_base_url: str) -> AsyncGenerator[ESchedulerSDK, None]:
     """測試用 SDK 實例"""
     sdk = ESchedulerSDK(
-        base_url="http://localhost:8000",
+        base_url=escheduler_base_url,
         jwt_token="test-jwt-token",
         timeout=10.0
     )
