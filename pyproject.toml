@@ -43,6 +43,7 @@ dev-dependencies = [
     "twine>=6.2.0",
     "pytest-httpx>=0.35.0",
     "pytest-mock>=3.15.0",
+    "testcontainers[postgres]>=4.13.0",
 ]
 
 [project.urls]
