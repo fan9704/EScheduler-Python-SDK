@@ -16,6 +16,7 @@ src/escheduler_sdk/models/__init__.py
 src/escheduler_sdk/models/enum/__init__.py
 src/escheduler_sdk/models/enum/enums.py
 src/escheduler_sdk/models/pydantic/__init__.py
+src/escheduler_sdk/models/pydantic/email.py
 src/escheduler_sdk/models/pydantic/generic.py
 src/escheduler_sdk/models/pydantic/scheduler.py
 src/escheduler_sdk/models/template/__init__.py

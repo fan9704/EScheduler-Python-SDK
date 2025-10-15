@@ -15,7 +15,13 @@ from .models import (
     TaskState,
     TargetType,
     ExecutionStatus,
-    ScheduleType
+    ScheduleType,
+    HttpTaskTemplate,
+    WebhookTaskTemplate,
+    RabbitMQTaskTemplate,
+    EmailTaskTemplate,
+    EmailTemplateCreateTemplate,
+    TemplateVariable
 )
 from .exceptions import (
     ESchedulerError,
@@ -46,5 +52,11 @@ __all__ = [
     "AuthenticationError",
     "ValidationError",
     "NotFoundError",
-    "ServerError"
+    "ServerError",
+    "HttpTaskTemplate",
+    "WebhookTaskTemplate",
+    "RabbitMQTaskTemplate",
+    "EmailTaskTemplate",
+    "EmailTemplateCreateTemplate",
+    "TemplateVariable"
 ]

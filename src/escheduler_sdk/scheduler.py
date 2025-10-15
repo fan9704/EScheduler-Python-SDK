@@ -12,6 +12,10 @@ from .models import (
     TaskState,
     MessageResponse,
     BaseTaskTemplate,
+    EmailTemplateCreateTemplate,
+    EmailTemplateCreate,
+    EmailTemplateResponse,
+    EmailTemplateUpdate,
 )
 
 
@@ -27,6 +31,7 @@ class SchedulerAPI:
         """
         self.client = client
         self.base_endpoint = "/api/scheduler"
+        self.template_endpoint = "/api/email-templates"
     
     async def create_task(
         self, 
@@ -59,6 +64,75 @@ class SchedulerAPI:
             json_data=task_data.model_dump(exclude_none=True)
         )
         return ScheduledTaskResponse(**response_data)
+
+    async def create_email_template(
+        self,
+        template: Union[EmailTemplateCreate, EmailTemplateCreateTemplate]
+    ) -> EmailTemplateResponse:
+        """
+        創建新的 Email 模板。
+
+        可以接受一個完整的 `EmailTemplateCreate` 模型，
+        或者一個 `EmailTemplateCreateTemplate` 的實例來快速創建模板。
+
+        Args:
+            template: 模板創建數據模型或模板範本
+
+        Returns:
+            創建的模板信息
+
+        Raises:
+            ValidationError: 當模板數據驗證失敗時
+            AuthenticationError: 當認證失敗時
+            ESchedulerError: 其他 API 錯誤
+        """
+        if isinstance(template, EmailTemplateCreateTemplate):
+            template_data = template.build()
+        else:
+            template_data = template
+
+        response_data = await self.client.post(
+            self.template_endpoint,
+            json_data=template_data.model_dump(exclude_none=True)
+        )
+        return EmailTemplateResponse(**response_data)
+
+    async def update_email_template(
+        self, 
+        template_id: int, 
+        template_data: EmailTemplateUpdate
+    ) -> EmailTemplateResponse:
+        """
+        更新排程任務
+        
+        Args:
+            task_id: 任務 ID
+            task_data: 任務更新數據
+            
+        Returns:
+            更新後的任務信息
+            
+        Raises:
+            NotFoundError: 當任務不存在時
+            ValidationError: 當更新數據驗證失敗時
+        """
+        response_data = await self.client.put(
+            f"{self.template_endpoint}/{template_id}",
+            json_data=template_data.model_dump(exclude_none=True)
+        )
+        return EmailTemplateResponse(**response_data)
+
+    async def delete_email_template(self, template_id: int):
+        """
+        刪除 Email 模板。
+
+        Args:
+            template_id: 模板 ID
+
+        Raises:
+            NotFoundError: 當模板不存在時
+        """
+        await self.client.delete(f"{self.template_endpoint}/{template_id}")
     
     async def get_all_tasks(
         self, 
