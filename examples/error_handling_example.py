@@ -17,6 +17,7 @@ from escheduler_sdk import (
     TimeoutError,
     NetworkError
 )
+from escheduler_sdk.utils.test_logger import test_logger as logger
 
 
 async def demonstrate_error_handling():
@@ -30,10 +31,10 @@ async def demonstrate_error_handling():
         max_retries=3   # 設置重試次數
     ) as sdk:
         
-        print("=== 錯誤處理和重試機制範例 ===")
+        logger.info("=== 錯誤處理和重試機制範例 ===")
         
         # 1. 處理驗證錯誤
-        print("\n1. 處理驗證錯誤")
+        logger.info("\n1. 處理驗證錯誤")
         try:
             # 嘗試創建一個無效的任務（無效的 cron 表達式）
             invalid_task = ScheduledTaskCreate(
@@ -47,18 +48,18 @@ async def demonstrate_error_handling():
             )
             
             await sdk.scheduler.create_task(invalid_task)
-            print("✅ 任務創建成功（不應該到這裡）")
+            logger.info("✅ 任務創建成功（不應該到這裡）")
             
         except ValidationError as e:
-            print(f"❌ 驗證錯誤（預期的）: {e}")
-            print(f"   狀態碼: {e.status_code}")
+            logger.error(f"❌ 驗證錯誤（預期的）: {e}")
+            logger.error(f"   狀態碼: {e.status_code}")
             if hasattr(e, 'response_data') and e.response_data:
-                print(f"   詳細信息: {e.response_data}")
+                logger.error(f"   詳細信息: {e.response_data}")
         except Exception as e:
-            print(f"❌ 其他錯誤: {e}")
+            logger.error(f"❌ 其他錯誤: {e}")
         
         # 2. 處理認證錯誤
-        print("\n2. 處理認證錯誤")
+        logger.info("\n2. 處理認證錯誤")
         try:
             # 創建一個使用無效 JWT 的客戶端
             async with ESchedulerSDK(
@@ -67,30 +68,30 @@ async def demonstrate_error_handling():
                 timeout=5.0
             ) as invalid_sdk:
                 await invalid_sdk.scheduler.get_all_tasks()
-                print("✅ 獲取任務成功（不應該到這裡）")
+                logger.info("✅ 獲取任務成功（不應該到這裡）")
                 
         except AuthenticationError as e:
-            print(f"❌ 認證錯誤（預期的）: {e}")
-            print(f"   狀態碼: {e.status_code}")
+            logger.error(f"❌ 認證錯誤（預期的）: {e}")
+            logger.error(f"   狀態碼: {e.status_code}")
         except Exception as e:
-            print(f"❌ 其他錯誤: {e}")
+            logger.error(f"❌ 其他錯誤: {e}")
         
         # 3. 處理不存在的資源
-        print("\n3. 處理不存在的資源")
+        logger.info("\n3. 處理不存在的資源")
         try:
             # 嘗試獲取不存在的任務
             non_existent_id = "non-existent-task-id"
             await sdk.scheduler.get_task(non_existent_id)
-            print("✅ 獲取任務成功（不應該到這裡）")
+            logger.info("✅ 獲取任務成功（不應該到這裡）")
             
         except NotFoundError as e:
-            print(f"❌ 資源不存在（預期的）: {e}")
-            print(f"   狀態碼: {e.status_code}")
+            logger.error(f"❌ 資源不存在（預期的）: {e}")
+            logger.error(f"   狀態碼: {e.status_code}")
         except Exception as e:
-            print(f"❌ 其他錯誤: {e}")
+            logger.error(f"❌ 其他錯誤: {e}")
         
         # 4. 處理網路錯誤
-        print("\n4. 處理網路錯誤")
+        logger.info("\n4. 處理網路錯誤")
         try:
             # 使用無效的 URL
             async with ESchedulerSDK(
@@ -100,21 +101,21 @@ async def demonstrate_error_handling():
                 max_retries=1  # 減少重試次數以加快演示
             ) as network_sdk:
                 await network_sdk.scheduler.get_all_tasks()
-                print("✅ 獲取任務成功（不應該到這裡）")
+                logger.info("✅ 獲取任務成功（不應該到這裡）")
                 
         except NetworkError as e:
-            print(f"❌ 網路錯誤（預期的）: {e}")
+            logger.error(f"❌ 網路錯誤（預期的）: {e}")
         except TimeoutError as e:
-            print(f"❌ 超時錯誤（預期的）: {e}")
+            logger.error(f"❌ 超時錯誤（預期的）: {e}")
         except Exception as e:
-            print(f"❌ 其他錯誤: {e}")
+            logger.error(f"❌ 其他錯誤: {e}")
         
         # 5. 重試機制演示
-        print("\n5. 重試機制演示")
+        logger.info("\n5. 重試機制演示")
         
         # 創建一個有效的任務來演示重試
         try:
-            print("創建測試任務...")
+            logger.info("創建測試任務...")
             test_task = ScheduledTaskCreate(
                 name="重試測試任務",
                 description="用於測試重試機制的任務",
@@ -130,32 +131,32 @@ async def demonstrate_error_handling():
             )
             
             created_task = await sdk.scheduler.create_task(test_task)
-            print(f"✅ 測試任務創建成功，ID: {created_task.id}")
+            logger.info(f"✅ 測試任務創建成功，ID: {created_task.id}")
             
             # 嘗試多次操作來觸發重試機制
             task_id = created_task.id
             
             # 正常操作
-            print("執行正常操作...")
+            logger.info("執行正常操作...")
             task_detail = await sdk.scheduler.get_task(task_id)
-            print(f"✅ 獲取任務詳情成功: {task_detail.name}")
+            logger.info(f"✅ 獲取任務詳情成功: {task_detail.name}")
             
             # 手動觸發任務
-            print("手動觸發任務...")
+            logger.info("手動觸發任務...")
             trigger_result = await sdk.scheduler.trigger_task(task_id)
-            print(f"✅ 任務觸發成功: {trigger_result.message}")
+            logger.info(f"✅ 任務觸發成功: {trigger_result.message}")
             
             # 清理：刪除測試任務
-            print("清理測試任務...")
+            logger.info("清理測試任務...")
             delete_result = await sdk.scheduler.delete_task(task_id)
-            print(f"✅ 任務刪除成功: {delete_result.message}")
+            logger.info(f"✅ 任務刪除成功: {delete_result.message}")
             
         except Exception as e:
-            print(f"❌ 重試演示過程中發生錯誤: {e}")
-            print(f"   錯誤類型: {type(e).__name__}")
+            logger.error(f"❌ 重試演示過程中發生錯誤: {e}")
+            logger.error(f"   錯誤類型: {type(e).__name__}")
         
         # 6. 批量操作錯誤處理
-        print("\n6. 批量操作錯誤處理")
+        logger.info("\n6. 批量操作錯誤處理")
         
         # 創建多個任務，其中一些可能失敗
         tasks_to_create = [
@@ -181,7 +182,7 @@ async def demonstrate_error_handling():
         
         for task_info in tasks_to_create:
             try:
-                print(f"創建任務: {task_info['name']}")
+                logger.info(f"創建任務: {task_info['name']}")
                 
                 task_data = ScheduledTaskCreate(
                     name=task_info['name'],
@@ -198,66 +199,66 @@ async def demonstrate_error_handling():
                 
                 created_task = await sdk.scheduler.create_task(task_data)
                 successful_tasks.append(created_task)
-                print(f"  ✅ 成功創建，ID: {created_task.id}")
+                logger.info(f"  ✅ 成功創建，ID: {created_task.id}")
                 
             except ValidationError as e:
                 failed_tasks.append({"name": task_info['name'], "error": str(e)})
-                print(f"  ❌ 驗證失敗: {e}")
+                logger.error(f"  ❌ 驗證失敗: {e}")
             except Exception as e:
                 failed_tasks.append({"name": task_info['name'], "error": str(e)})
-                print(f"  ❌ 創建失敗: {e}")
+                logger.error(f"  ❌ 創建失敗: {e}")
         
         # 批量操作結果
-        print(f"\n批量操作結果:")
-        print(f"  成功: {len(successful_tasks)} 個任務")
-        print(f"  失敗: {len(failed_tasks)} 個任務")
+        logger.info(f"\n批量操作結果:")
+        logger.info(f"  成功: {len(successful_tasks)} 個任務")
+        logger.info(f"  失敗: {len(failed_tasks)} 個任務")
         
         if successful_tasks:
-            print("\n成功創建的任務:")
+            logger.info("\n成功創建的任務:")
             for task in successful_tasks:
-                print(f"  - {task.name} (ID: {task.id})")
+                logger.info(f"  - {task.name} (ID: {task.id})")
         
         if failed_tasks:
-            print("\n失敗的任務:")
+            logger.info("\n失敗的任務:")
             for failed in failed_tasks:
-                print(f"  - {failed['name']}: {failed['error']}")
+                logger.info(f"  - {failed['name']}: {failed['error']}")
         
         # 7. 自定義錯誤處理函數
-        print("\n7. 自定義錯誤處理")
+        logger.info("\n7. 自定義錯誤處理")
         
         async def safe_operation(operation_name, operation_func, *args, **kwargs):
             """安全執行操作的包裝函數"""
             try:
-                print(f"執行操作: {operation_name}")
+                logger.info(f"執行操作: {operation_name}")
                 result = await operation_func(*args, **kwargs)
-                print(f"  ✅ {operation_name} 成功")
+                logger.info(f"  ✅ {operation_name} 成功")
                 return result
             except AuthenticationError as e:
-                print(f"  ❌ {operation_name} 認證失敗: {e}")
+                logger.error(f"  ❌ {operation_name} 認證失敗: {e}")
                 return None
             except ValidationError as e:
-                print(f"  ❌ {operation_name} 驗證失敗: {e}")
+                logger.error(f"  ❌ {operation_name} 驗證失敗: {e}")
                 return None
             except NotFoundError as e:
-                print(f"  ❌ {operation_name} 資源不存在: {e}")
+                logger.error(f"  ❌ {operation_name} 資源不存在: {e}")
                 return None
             except TimeoutError as e:
-                print(f"  ❌ {operation_name} 超時: {e}")
+                logger.error(f"  ❌ {operation_name} 超時: {e}")
                 return None
             except NetworkError as e:
-                print(f"  ❌ {operation_name} 網路錯誤: {e}")
+                logger.error(f"  ❌ {operation_name} 網路錯誤: {e}")
                 return None
             except ServerError as e:
-                print(f"  ❌ {operation_name} 服務器錯誤: {e}")
+                logger.error(f"  ❌ {operation_name} 服務器錯誤: {e}")
                 return None
             except RateLimitError as e:
-                print(f"  ❌ {operation_name} 請求頻率限制: {e}")
+                logger.error(f"  ❌ {operation_name} 請求頻率限制: {e}")
                 return None
             except ESchedulerError as e:
-                print(f"  ❌ {operation_name} EScheduler 錯誤: {e}")
+                logger.error(f"  ❌ {operation_name} EScheduler 錯誤: {e}")
                 return None
             except Exception as e:
-                print(f"  ❌ {operation_name} 未知錯誤: {e}")
+                logger.error(f"  ❌ {operation_name} 未知錯誤: {e}")
                 return None
         
         # 使用安全操作函數
@@ -265,15 +266,15 @@ async def demonstrate_error_handling():
         stats = await safe_operation("獲取統計信息", sdk.scheduler.get_scheduler_stats)
         
         if tasks:
-            print(f"  當前共有 {len(tasks)} 個任務")
+            logger.info(f"  當前共有 {len(tasks)} 個任務")
         
         if stats:
-            print(f"  啟用任務: {stats.enabled_tasks}")
-            print(f"  今日執行: {stats.total_executions_today}")
+            logger.info(f"  啟用任務: {stats.enabled_tasks}")
+            logger.info(f"  今日執行: {stats.total_executions_today}")
         
         # 清理成功創建的任務
         if successful_tasks:
-            print("\n清理測試任務...")
+            logger.info("\n清理測試任務...")
             for task in successful_tasks:
                 await safe_operation(
                     f"刪除任務 {task.name}",
@@ -281,15 +282,15 @@ async def demonstrate_error_handling():
                     task.id
                 )
         
-        print("\n=== 錯誤處理演示完成 ===")
-        print("\n錯誤處理最佳實踐:")
-        print("1. 總是使用 try-except 包裝 API 調用")
-        print("2. 根據不同的錯誤類型採取不同的處理策略")
-        print("3. 記錄錯誤信息以便調試")
-        print("4. 對於臨時性錯誤（網路、超時），考慮重試")
-        print("5. 對於永久性錯誤（驗證、認證），不要重試")
-        print("6. 在批量操作中，單個失敗不應影響其他操作")
-        print("7. 提供有意義的錯誤信息給用戶")
+        logger.info("\n=== 錯誤處理演示完成 ===")
+        logger.info("\n錯誤處理最佳實踐:")
+        logger.info("1. 總是使用 try-except 包裝 API 調用")
+        logger.info("2. 根據不同的錯誤類型採取不同的處理策略")
+        logger.info("3. 記錄錯誤信息以便調試")
+        logger.info("4. 對於臨時性錯誤（網路、超時），考慮重試")
+        logger.info("5. 對於永久性錯誤（驗證、認證），不要重試")
+        logger.info("6. 在批量操作中，單個失敗不應影響其他操作")
+        logger.info("7. 提供有意義的錯誤信息給用戶")
 
 
 if __name__ == "__main__":

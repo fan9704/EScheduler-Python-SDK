@@ -8,6 +8,7 @@ from escheduler_sdk import (
     ScheduledTaskCreate,
     TargetType
 )
+from escheduler_sdk.utils.test_logger import test_logger as logger
 
 
 async def create_cron_tasks():
@@ -21,9 +22,9 @@ async def create_cron_tasks():
     ) as sdk:
         
         try:
-            print("=== Cron 表達式排程範例 ===")
-            print("Cron 格式: 分 時 日 月 星期")
-            print("範例將創建各種常見的排程模式\n")
+            logger.info("=== Cron 表達式排程範例 ===")
+            logger.info("Cron 格式: 分 時 日 月 星期")
+            logger.info("範例將創建各種常見的排程模式\n")
             
             # 定義各種 Cron 排程範例
             cron_examples = [
@@ -131,9 +132,9 @@ async def create_cron_tasks():
             
             # 創建所有範例任務
             for i, example in enumerate(cron_examples, 1):
-                print(f"{i:2d}. 創建任務: {example['name']}")
-                print(f"    Cron: {example['cron']}")
-                print(f"    說明: {example['description']}")
+                logger.info(f"{i:2d}. 創建任務: {example['name']}")
+                logger.info(f"    Cron: {example['cron']}")
+                logger.info(f"    說明: {example['description']}")
                 
                 try:
                     task_data = ScheduledTaskCreate(
@@ -153,55 +154,52 @@ async def create_cron_tasks():
                     
                     created_task = await sdk.scheduler.create_task(task_data)
                     created_tasks.append(created_task)
-                    print(f"    ✅ 創建成功，ID: {created_task.id}")
+                    logger.info(f"    ✅ 創建成功，ID: {created_task.id}")
                     
                     if created_task.next_execution_time:
-                        print(f"    下次執行: {created_task.next_execution_time}")
+                        logger.info(f"    下次執行: {created_task.next_execution_time}")
                     
                 except Exception as e:
-                    print(f"    ❌ 創建失敗: {e}")
-                
-                print()
+                    logger.error(f"    ❌ 創建失敗: {e}")
             
             # 顯示創建結果摘要
-            print(f"=== 創建結果摘要 ===")
-            print(f"成功創建 {len(created_tasks)} 個任務")
-            print("\n任務列表:")
+            logger.info(f"=== 創建結果摘要 ===")
+            logger.info(f"成功創建 {len(created_tasks)} 個任務")
+            logger.info("\n任務列表:")
             
             for task in created_tasks:
-                print(f"  - {task.name}")
-                print(f"    ID: {task.id}")
-                print(f"    狀態: {task.state}")
-                print(f"    排程: {task.schedule_expression}")
+                logger.info(f"  - {task.name}")
+                logger.info(f"    ID: {task.id}")
+                logger.info(f"    狀態: {task.state}")
+                logger.info(f"    排程: {task.schedule_expression}")
                 if task.next_execution_time:
-                    print(f"    下次執行: {task.next_execution_time}")
-                print()
+                    logger.info(f"    下次執行: {task.next_execution_time}")
             
             # 獲取排程器統計
-            print("=== 排程器統計 ===")
+            logger.info("=== 排程器統計 ===")
             stats = await sdk.scheduler.get_scheduler_stats()
-            print(f"總任務數: {stats.total_tasks}")
-            print(f"啟用任務: {stats.enabled_tasks}")
-            print(f"暫停任務: {stats.disabled_tasks}")
+            logger.info(f"總任務數: {stats.total_tasks}")
+            logger.info(f"啟用任務: {stats.enabled_tasks}")
+            logger.info(f"暫停任務: {stats.disabled_tasks}")
             
             # 常用 Cron 表達式說明
-            print("\n=== 常用 Cron 表達式說明 ===")
-            print("格式: 分 時 日 月 星期")
-            print("特殊字符:")
-            print("  * : 任意值")
-            print("  , : 列舉多個值 (例如: 1,3,5)")
-            print("  - : 範圍 (例如: 1-5)")
-            print("  / : 步長 (例如: */5 表示每5個單位)")
-            print("  L : 最後 (僅用於日期，表示月份最後一天)")
-            print("\n星期對應:")
-            print("  SUN=0, MON=1, TUE=2, WED=3, THU=4, FRI=5, SAT=6")
-            print("  也可以使用: SUN, MON, TUE, WED, THU, FRI, SAT")
+            logger.info("\n=== 常用 Cron 表達式說明 ===")
+            logger.info("格式: 分 時 日 月 星期")
+            logger.info("特殊字符:")
+            logger.info("  * : 任意值")
+            logger.info("  , : 列舉多個值 (例如: 1,3,5)")
+            logger.info("  - : 範圍 (例如: 1-5)")
+            logger.info("  / : 步長 (例如: */5 表示每5個單位)")
+            logger.info("  L : 最後 (僅用於日期，表示月份最後一天)")
+            logger.info("\n星期對應:")
+            logger.info("  SUN=0, MON=1, TUE=2, WED=3, THU=4, FRI=5, SAT=6")
+            logger.info("  也可以使用: SUN, MON, TUE, WED, THU, FRI, SAT")
             
         except Exception as e:
-            print(f"❌ 發生錯誤: {e}")
-            print(f"   錯誤類型: {type(e).__name__}")
+            logger.error(f"❌ 發生錯誤: {e}")
+            logger.error(f"   錯誤類型: {type(e).__name__}")
             if hasattr(e, 'status_code'):
-                print(f"   HTTP 狀態碼: {e.status_code}")
+                logger.error(f"   HTTP 狀態碼: {e.status_code}")
 
 
 if __name__ == "__main__":

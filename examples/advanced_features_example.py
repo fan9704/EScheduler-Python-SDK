@@ -11,6 +11,7 @@ from escheduler_sdk import (
     TargetType,
     TaskState
 )
+from escheduler_sdk.utils.test_logger import test_logger as logger
 
 
 async def demonstrate_advanced_features():
@@ -23,10 +24,10 @@ async def demonstrate_advanced_features():
         timeout=30.0
     ) as sdk:
         
-        print("=== EScheduler 進階功能範例 ===")
+        logger.info("=== EScheduler 進階功能範例 ===")
         
         # 1. 創建多個不同類型的任務用於演示
-        print("\n1. 創建演示任務")
+        logger.info("\n1. 創建演示任務")
         
         demo_tasks = []
         
@@ -85,41 +86,41 @@ async def demonstrate_advanced_features():
             try:
                 created_task = await sdk.scheduler.create_task(task_data)
                 demo_tasks.append(created_task)
-                print(f"✅ 創建任務: {created_task.name} (ID: {created_task.id})")
+                logger.info(f"✅ 創建任務: {created_task.name} (ID: {created_task.id})")
             except Exception as e:
-                print(f"❌ 創建任務失敗 {task_data.name}: {e}")
+                logger.error(f"❌ 創建任務失敗 {task_data.name}: {e}")
         
         if not demo_tasks:
-            print("❌ 沒有成功創建任務，無法演示進階功能")
+            logger.info("❌ 沒有成功創建任務，無法演示進階功能")
             return
         
         # 2. 獲取和分析調度器統計信息
-        print("\n2. 調度器統計信息")
+        logger.info("\n2. 調度器統計信息")
         
         try:
             stats = await sdk.scheduler.get_scheduler_stats()
-            print(f"📊 調度器統計信息:")
-            print(f"   總任務數: {stats.total_tasks}")
-            print(f"   啟用任務: {stats.enabled_tasks}")
-            print(f"   暫停任務: {stats.paused_tasks}")
-            print(f"   今日執行次數: {stats.total_executions_today}")
-            print(f"   今日成功執行: {stats.successful_executions_today}")
-            print(f"   今日失敗執行: {stats.failed_executions_today}")
+            logger.info(f"📊 調度器統計信息:")
+            logger.info(f"   總任務數: {stats.total_tasks}")
+            logger.info(f"   啟用任務: {stats.enabled_tasks}")
+            logger.info(f"   暫停任務: {stats.paused_tasks}")
+            logger.info(f"   今日執行次數: {stats.total_executions_today}")
+            logger.info(f"   今日成功執行: {stats.successful_executions_today}")
+            logger.info(f"   今日失敗執行: {stats.failed_executions_today}")
             
             # 計算成功率
             if stats.total_executions_today > 0:
                 success_rate = (stats.successful_executions_today / stats.total_executions_today) * 100
-                print(f"   今日成功率: {success_rate:.2f}%")
+                logger.info(f"   今日成功率: {success_rate:.2f}%")
             
         except Exception as e:
-            print(f"❌ 獲取統計信息失敗: {e}")
+            logger.error(f"❌ 獲取統計信息失敗: {e}")
         
         # 3. 任務執行歷史分析
-        print("\n3. 任務執行歷史分析")
+        logger.info("\n3. 任務執行歷史分析")
         
         for task in demo_tasks[:2]:  # 只分析前兩個任務
             try:
-                print(f"\n📈 分析任務: {task.name}")
+                logger.info(f"\n📈 分析任務: {task.name}")
                 
                 # 獲取任務執行歷史
                 history = await sdk.scheduler.get_task_execution_history(
@@ -128,7 +129,7 @@ async def demonstrate_advanced_features():
                 )
                 
                 if history:
-                    print(f"   最近 {len(history)} 次執行記錄:")
+                    logger.info(f"   最近 {len(history)} 次執行記錄:")
                     
                     success_count = 0
                     failure_count = 0
@@ -136,10 +137,10 @@ async def demonstrate_advanced_features():
                     
                     for i, execution in enumerate(history, 1):
                         status_emoji = "✅" if execution.status == "SUCCESS" else "❌"
-                        print(f"   {i}. {status_emoji} {execution.execution_time} - {execution.status}")
+                        logger.info(f"   {i}. {status_emoji} {execution.execution_time} - {execution.status}")
                         
                         if hasattr(execution, 'duration_ms') and execution.duration_ms:
-                            print(f"      執行時間: {execution.duration_ms}ms")
+                            logger.info(f"      執行時間: {execution.duration_ms}ms")
                             total_duration += execution.duration_ms
                         
                         if execution.status == "SUCCESS":
@@ -147,27 +148,27 @@ async def demonstrate_advanced_features():
                         else:
                             failure_count += 1
                             if hasattr(execution, 'error_message') and execution.error_message:
-                                print(f"      錯誤信息: {execution.error_message}")
+                                logger.info(f"      錯誤信息: {execution.error_message}")
                     
                     # 執行統計
                     total_executions = len(history)
                     if total_executions > 0:
                         success_rate = (success_count / total_executions) * 100
-                        print(f"   執行統計:")
-                        print(f"     成功: {success_count}/{total_executions} ({success_rate:.1f}%)")
-                        print(f"     失敗: {failure_count}/{total_executions}")
+                        logger.info(f"   執行統計:")
+                        logger.info(f"     成功: {success_count}/{total_executions} ({success_rate:.1f}%)")
+                        logger.info(f"     失敗: {failure_count}/{total_executions}")
                         
                         if total_duration > 0:
                             avg_duration = total_duration / total_executions
-                            print(f"     平均執行時間: {avg_duration:.1f}ms")
+                            logger.info(f"     平均執行時間: {avg_duration:.1f}ms")
                 else:
-                    print("   暫無執行歷史")
+                    logger.info("   暫無執行歷史")
                 
             except Exception as e:
-                print(f"❌ 獲取任務 {task.name} 執行歷史失敗: {e}")
+                logger.error(f"❌ 獲取任務 {task.name} 執行歷史失敗: {e}")
         
         # 4. 任務監控和健康檢查
-        print("\n4. 任務監控和健康檢查")
+        logger.info("\n4. 任務監控和健康檢查")
         
         async def check_task_health(task_id: str, task_name: str) -> Dict[str, Any]:
             """檢查單個任務的健康狀態"""
@@ -224,7 +225,7 @@ async def demonstrate_advanced_features():
             return health_info
         
         # 檢查所有演示任務的健康狀態
-        print("🏥 任務健康檢查:")
+        logger.info("🏥 任務健康檢查:")
         
         healthy_tasks = 0
         unhealthy_tasks = 0
@@ -233,47 +234,47 @@ async def demonstrate_advanced_features():
             health_info = await check_task_health(task.id, task.name)
             
             if health_info["is_healthy"]:
-                print(f"   ✅ {health_info['task_name']}: 健康")
+                logger.info(f"   ✅ {health_info['task_name']}: 健康")
                 healthy_tasks += 1
             else:
-                print(f"   ❌ {health_info['task_name']}: 異常")
+                logger.info(f"   ❌ {health_info['task_name']}: 異常")
                 for issue in health_info["issues"]:
-                    print(f"      - {issue}")
+                    logger.info(f"      - {issue}")
                 unhealthy_tasks += 1
         
-        print(f"\n健康檢查摘要:")
-        print(f"   健康任務: {healthy_tasks}")
-        print(f"   異常任務: {unhealthy_tasks}")
+        logger.info(f"\n健康檢查摘要:")
+        logger.info(f"   健康任務: {healthy_tasks}")
+        logger.info(f"   異常任務: {unhealthy_tasks}")
         
         # 5. 批量任務管理
-        print("\n5. 批量任務管理")
+        logger.info("\n5. 批量任務管理")
         
         # 批量暫停任務
-        print("暫停所有演示任務...")
+        logger.info("暫停所有演示任務...")
         paused_tasks = []
         for task in demo_tasks:
             try:
                 result = await sdk.scheduler.pause_task(task.id)
                 paused_tasks.append(task.id)
-                print(f"   ✅ 暫停任務: {task.name}")
+                logger.info(f"   ✅ 暫停任務: {task.name}")
             except Exception as e:
-                print(f"   ❌ 暫停任務失敗 {task.name}: {e}")
+                logger.error(f"   ❌ 暫停任務失敗 {task.name}: {e}")
         
         # 等待一下
         await asyncio.sleep(2)
         
         # 批量啟用任務
-        print("\n啟用所有演示任務...")
+        logger.info("\n啟用所有演示任務...")
         for task_id in paused_tasks:
             try:
                 task_detail = await sdk.scheduler.get_task(task_id)
                 result = await sdk.scheduler.enable_task(task_id)
-                print(f"   ✅ 啟用任務: {task_detail.name}")
+                logger.info(f"   ✅ 啟用任務: {task_detail.name}")
             except Exception as e:
-                print(f"   ❌ 啟用任務失敗 {task_id}: {e}")
+                logger.error(f"   ❌ 啟用任務失敗 {task_id}: {e}")
         
         # 6. 任務搜索和過濾
-        print("\n6. 任務搜索和過濾")
+        logger.info("\n6. 任務搜索和過濾")
         
         # 搜索包含特定關鍵字的任務
         search_keywords = ["備份", "檢查", "報告"]
@@ -285,20 +286,20 @@ async def demonstrate_advanced_features():
                     limit=10
                 )
                 
-                print(f"🔍 搜索 '{keyword}' 的結果: {len(search_results)} 個任務")
+                logger.info(f"🔍 搜索 '{keyword}' 的結果: {len(search_results)} 個任務")
                 for task in search_results:
-                    print(f"   - {task.name} (ID: {task.id})")
+                    logger.info(f"   - {task.name} (ID: {task.id})")
                     
             except Exception as e:
-                print(f"❌ 搜索 '{keyword}' 失敗: {e}")
+                logger.error(f"❌ 搜索 '{keyword}' 失敗: {e}")
         
         # 7. 任務性能分析
-        print("\n7. 任務性能分析")
+        logger.info("\n7. 任務性能分析")
         
         async def analyze_task_performance(task_id: str, task_name: str):
             """分析任務性能"""
             try:
-                print(f"\n📊 分析任務性能: {task_name}")
+                logger.info(f"\n📊 分析任務性能: {task_name}")
                 
                 # 獲取更多執行歷史用於分析
                 history = await sdk.scheduler.get_task_execution_history(
@@ -306,7 +307,7 @@ async def demonstrate_advanced_features():
                 )
                 
                 if not history:
-                    print("   暫無足夠的執行數據進行分析")
+                    logger.info("   暫無足夠的執行數據進行分析")
                     return
                 
                 # 性能指標
@@ -327,57 +328,57 @@ async def demonstrate_advanced_features():
                 total_executions = len(history)
                 success_rate = (success_count / total_executions) * 100
                 
-                print(f"   執行次數: {total_executions}")
-                print(f"   成功率: {success_rate:.2f}%")
+                logger.info(f"   執行次數: {total_executions}")
+                logger.info(f"   成功率: {success_rate:.2f}%")
                 
                 if durations:
                     avg_duration = sum(durations) / len(durations)
                     min_duration = min(durations)
                     max_duration = max(durations)
                     
-                    print(f"   平均執行時間: {avg_duration:.2f}ms")
-                    print(f"   最快執行時間: {min_duration}ms")
-                    print(f"   最慢執行時間: {max_duration}ms")
+                    logger.info(f"   平均執行時間: {avg_duration:.2f}ms")
+                    logger.info(f"   最快執行時間: {min_duration}ms")
+                    logger.info(f"   最慢執行時間: {max_duration}ms")
                     
                     # 性能建議
                     if avg_duration > 10000:  # 超過 10 秒
-                        print(f"   ⚠️  建議: 執行時間較長，考慮優化任務邏輯")
+                        logger.info(f"   ⚠️  建議: 執行時間較長，考慮優化任務邏輯")
                     
                     if max_duration > avg_duration * 3:  # 最慢執行時間是平均時間的 3 倍以上
-                        print(f"   ⚠️  建議: 執行時間不穩定，檢查資源使用情況")
+                        logger.info(f"   ⚠️  建議: 執行時間不穩定，檢查資源使用情況")
                 
                 if success_rate < 95:
-                    print(f"   ⚠️  建議: 成功率較低，檢查任務配置和目標服務")
+                    logger.info(f"   ⚠️  建議: 成功率較低，檢查任務配置和目標服務")
                 
             except Exception as e:
-                print(f"❌ 分析任務 {task_name} 性能失敗: {e}")
+                logger.error(f"❌ 分析任務 {task_name} 性能失敗: {e}")
         
         # 分析所有演示任務的性能
         for task in demo_tasks:
             await analyze_task_performance(task.id, task.name)
         
         # 8. 清理演示任務
-        print("\n8. 清理演示任務")
+        logger.info("\n8. 清理演示任務")
         
         for task in demo_tasks:
             try:
                 result = await sdk.scheduler.delete_task(task.id)
-                print(f"✅ 刪除任務: {task.name}")
+                logger.info(f"✅ 刪除任務: {task.name}")
             except Exception as e:
-                print(f"❌ 刪除任務失敗 {task.name}: {e}")
+                logger.error(f"❌ 刪除任務失敗 {task.name}: {e}")
         
-        print("\n=== 進階功能演示完成 ===")
+        logger.info("\n=== 進階功能演示完成 ===")
         
         # 最佳實踐建議
-        print("\n🎯 進階功能使用建議:")
-        print("1. 定期檢查調度器統計信息，監控整體健康狀態")
-        print("2. 分析任務執行歷史，識別性能瓶頸和失敗模式")
-        print("3. 實施任務健康檢查，及時發現和解決問題")
-        print("4. 使用批量操作提高管理效率")
-        print("5. 利用搜索功能快速定位特定任務")
-        print("6. 基於性能分析結果優化任務配置")
-        print("7. 建立監控告警機制，自動化問題響應")
-        print("8. 定期清理不需要的任務，保持系統整潔")
+        logger.info("\n🎯 進階功能使用建議:")
+        logger.info("1. 定期檢查調度器統計信息，監控整體健康狀態")
+        logger.info("2. 分析任務執行歷史，識別性能瓶頸和失敗模式")
+        logger.info("3. 實施任務健康檢查，及時發現和解決問題")
+        logger.info("4. 使用批量操作提高管理效率")
+        logger.info("5. 利用搜索功能快速定位特定任務")
+        logger.info("6. 基於性能分析結果優化任務配置")
+        logger.info("7. 建立監控告警機制，自動化問題響應")
+        logger.info("8. 定期清理不需要的任務，保持系統整潔")
 
 
 if __name__ == "__main__":
