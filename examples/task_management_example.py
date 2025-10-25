@@ -39,7 +39,6 @@ async def manage_tasks():
                 print(f"     狀態: {task.state}")
                 print(f"     排程: {task.schedule_expression}")
                 print(f"     執行次數: {task.execution_count}")
-                print()
             
             # 選擇第一個任務進行操作
             task_to_manage = all_tasks[0]

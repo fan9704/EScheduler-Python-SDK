@@ -10,6 +10,7 @@ from escheduler_sdk.models import (
     EmailTaskTemplate,
 )
 from escheduler_sdk.exceptions import ESchedulerError
+from escheduler_sdk.utils.test_logger import test_logger as logger
 
 @pytest.mark.e2e
 class TestStrategyTemplateE2E:
@@ -32,26 +33,28 @@ class TestStrategyTemplateE2E:
         created_task = None
         try:
             # 1. 創建任務
-            print(f"\n正在使用 {template.__class__.__name__} 創建任務：{template.name}")
+            logger.info(f"\n正在使用 {template.__class__.__name__} 創建任務：{template.name}")
             created_task = await sdk.scheduler.create_task(template)
 
             assert created_task is not None
             assert created_task.id is not None
             assert created_task.name == template.name
             assert created_task.target_arn == expected_arn
-            print(f"任務創建成功，ID: {created_task.id}")
+            logger.info(f"任務創建成功，ID: {created_task.id}")
 
         except ESchedulerError as e:
+            logger.error(f"創建任務時 API 回應錯誤：{e}")
             pytest.fail(f"創建任務時 API 回應錯誤：{e}")
 
         finally:
             # 2. 清理任務
             if created_task and created_task.id:
-                print(f"正在刪除任務，ID: {created_task.id}")
+                logger.info(f"正在刪除任務，ID: {created_task.id}")
                 try:
                     await sdk.scheduler.delete_task(created_task.id)
-                    print(f"任務 {created_task.id} 清理成功。")
+                    logger.info(f"任務 {created_task.id} 清理成功。")
                 except ESchedulerError as e:
+                    logger.error(f"清理（刪除）任務 {created_task.id} 失敗：{e}")
                     pytest.fail(f"清理（刪除）任務 {created_task.id} 失敗：{e}")
 
     @pytest.mark.asyncio

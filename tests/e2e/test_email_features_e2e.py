@@ -11,6 +11,7 @@ from escheduler_sdk.models import (
     EmailTaskTemplate,
 )
 from escheduler_sdk.exceptions import NotFoundError, ESchedulerError
+from escheduler_sdk.utils.test_logger import test_logger as logger
 
 # --- 測試設定 ---
 load_dotenv()
@@ -65,8 +66,9 @@ class TestEmailFeaturesE2E:
                 try:
                     async with ESchedulerSDK(**e2e_config) as sdk:
                         await sdk.scheduler.delete_email_template(created_template.id)
-                        print(f"模板 {created_template.id} 清理成功。")
+                        logger.info(f"模板 {created_template.id} 清理成功。")
                 except (NotFoundError, ESchedulerError) as e:
+                    logger.error(f"清理模板 {created_template.id} 失敗：{e}")
                     pytest.fail(f"清理模板 {created_template.id} 失敗：{e}")
 
     @pytest.mark.asyncio
@@ -115,14 +117,16 @@ class TestEmailFeaturesE2E:
                 if created_task:
                     try:
                         await sdk.scheduler.delete_task(created_task.id)
-                        print(f"任務 {created_task.id} 清理成功。")
+                        logger.info(f"任務 {created_task.id} 清理成功。")
                     except (NotFoundError, ESchedulerError) as e:
+                        logger.error(f"清理任務 {created_task.id} 失敗：{e}")
                         pytest.fail(f"清理任務 {created_task.id} 失敗：{e}")
                 if created_template:
                     try:
                         await sdk.scheduler.delete_email_template(created_template.id)
-                        print(f"模板 {created_template.id} 清理成功。")
+                        logger.info(f"模板 {created_template.id} 清理成功。")
                     except (NotFoundError, ESchedulerError) as e:
+                        logger.error(f"清理模板 {created_template.id} 失敗：{e}")
                         pytest.fail(f"清理模板 {created_template.id} 失敗：{e}")
 
     @pytest.mark.asyncio
@@ -153,4 +157,5 @@ class TestEmailFeaturesE2E:
                     async with ESchedulerSDK(**e2e_config) as sdk:
                         await sdk.scheduler.delete_task(created_task.id)
                 except (NotFoundError, ESchedulerError) as e:
+                    logger.error(f"清理任務 {created_task.id} 失敗：{e}")
                     pytest.fail(f"清理任務 {created_task.id} 失敗：{e}")

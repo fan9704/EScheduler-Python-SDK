@@ -160,8 +160,6 @@ async def create_cron_tasks():
                     
                 except Exception as e:
                     print(f"    ❌ 創建失敗: {e}")
-                
-                print()
             
             # 顯示創建結果摘要
             print(f"=== 創建結果摘要 ===")
@@ -175,7 +173,6 @@ async def create_cron_tasks():
                 print(f"    排程: {task.schedule_expression}")
                 if task.next_execution_time:
                     print(f"    下次執行: {task.next_execution_time}")
-                print()
             
             # 獲取排程器統計
             print("=== 排程器統計 ===")

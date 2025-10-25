@@ -114,7 +114,6 @@ async def create_http_tasks():
                 print(f"  - {task.name} ({task.state})")
                 print(f"    排程: {task.schedule_expression}")
                 print(f"    目標: {task.target_arn}")
-                print()
             
         except Exception as e:
             print(f"❌ 發生錯誤: {e}")
