@@ -33,8 +33,7 @@ def rabbitmq(docker_network):
     print("啟動 RabbitMQ 容器...")
     with DockerContainer("rabbitmq:3.13-management") \
         .with_network(docker_network) \
-        .with_name("test-rabbitmq") \
-        .with_exposed_ports(5672) as rmq:
+        .with_name("test-rabbitmq") as rmq:
         yield rmq
 
 @pytest.fixture(scope="session")
@@ -42,8 +41,7 @@ def loki(docker_network):
     print("啟動 Loki 容器...")
     with DockerContainer("grafana/loki:2.9.2") \
         .with_network(docker_network) \
-        .with_name("test-loki") \
-        .with_exposed_ports(3100) as l:
+        .with_name("test-loki")  as l:
         yield l
 
 @pytest.fixture(scope="session")
@@ -54,7 +52,7 @@ def escheduler_base_url(
     docker_network
 ) -> str:
     print("啟動 EScheduler 容器...")
-    
+
     # 從依賴的容器 fixture 取得連線資訊
     pg_host = "test-postgres"
     pg_port = "5432"
