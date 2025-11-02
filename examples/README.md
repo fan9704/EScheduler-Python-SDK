@@ -75,6 +75,17 @@
 
 **適用場景**：需要深入監控和分析排程系統的運行狀況
 
+### 7. 任務範本範例 (`strategy_template_example.py`)
+
+展示如何使用各種預定義的任務範本（Strategy Template）來快速創建排程任務：
+- `HttpTaskTemplate`：快速創建 HTTP 任務
+- `WebhookTaskTemplate`：快速創建 Webhook 任務
+- `RabbitMQTaskTemplate`：快速創建 RabbitMQ 任務
+- `EmailTaskTemplate`：用於直接發送郵件或使用郵件範本發送郵件
+- 包含創建郵件範本 (`EmailTemplateCreateTemplate`) 並使用其 ID 來排程郵件的完整流程。
+
+**適用場景**：需要快速、標準化地創建常見類型的任務，特別是郵件任務。
+
 ## 使用前準備
 
 ### 1. 安裝依賴
@@ -118,6 +129,7 @@ python examples/task_management_example.py
 python examples/cron_examples.py
 python examples/error_handling_example.py
 python examples/advanced_features_example.py
+python examples/strategy_template_example.py
 ```
 
 ## 範例特點
