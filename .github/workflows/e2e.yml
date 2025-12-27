@@ -30,7 +30,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_KEY }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
         run: uv sync
