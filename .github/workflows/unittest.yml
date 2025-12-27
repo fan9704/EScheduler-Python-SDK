@@ -36,11 +36,11 @@ jobs:
         run: uv sync
 
       - name: Pre-pull GHCR Image (Optional but recommended)
-        run: docker pull ghcr.io/${{ github.repository_owner }}/your-image-name:latest
+        run: docker pull ghcr.io/${{ github.repository_owner }}/escheduler:latest
 
       - name: Run unittest with pytest
         env:
           DOCKER_HOST: unix:///var/run/docker.sock
-          TEST_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/your-image-name:latest
+          TEST_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/escheduler:latest
         run: |
           uv run pytest tests/unit -v -s
