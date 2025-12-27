@@ -1,4 +1,4 @@
-name: Auto Unittest
+name: E2E Testing (GHCR Testcontainers)
 
 on:
   push:
@@ -7,11 +7,11 @@ on:
   pull_request:
 
 jobs:
-  test:
+  e2e:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read # 允許讀取 GHCR
+      packages: read
 
     steps:
       - name: Checkout
@@ -22,6 +22,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -29,18 +32,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-
       - name: Install dependencies
         run: uv sync
 
-      - name: Pre-pull GHCR Image (Optional but recommended)
+      - name: Pre-pull GHCR Image
+        # 這裡建議手動拉一次，確保驗證通過且加速後面 Pytest 執行
         run: docker pull ghcr.io/${{ github.repository_owner }}/escheduler:latest
 
-      - name: Run unittest with pytest
+      - name: Run E2E tests
         env:
           DOCKER_HOST: unix:///var/run/docker.sock
           TEST_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/escheduler:latest
         run: |
-          uv run pytest tests/unit -v -s
+          uv run pytest tests/e2e -v -s
