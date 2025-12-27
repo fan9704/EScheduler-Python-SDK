@@ -21,5 +21,8 @@ src/escheduler_sdk/models/pydantic/generic.py
 src/escheduler_sdk/models/pydantic/scheduler.py
 src/escheduler_sdk/models/template/__init__.py
 src/escheduler_sdk/models/template/strategy_templates.py
+src/escheduler_sdk/utils/__init__.py
+src/escheduler_sdk/utils/example.py
+src/escheduler_sdk/utils/test_logger.py
 tests/test_client.py
 tests/test_models.py

@@ -1,11 +1,12 @@
 """測試配置和共用 fixtures"""
-
+import os
 import pytest
 import asyncio
 import pytest_asyncio
 from datetime import datetime
 from typing import AsyncGenerator
 
+os.environ["TESTCONTAINERS_RYUK_DISABLED"] = "true"
 from escheduler_sdk import ESchedulerSDK
 from escheduler_sdk.models import TargetType
 from testcontainers.core.container import DockerContainer
